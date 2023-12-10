@@ -5,6 +5,10 @@ import sys
 import os
 import time
 import sys
+from intraPara import *
+from interPara import Full_searchparaT2
+from ParaT1 import searchT1
+from paraT3 import T3main
 # import pickle as pkl
 
 import cv2
@@ -2243,6 +2247,8 @@ class VideoEncoder:
         # cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+
+
     def visualizeMV(self, frame_num):
         image = self.reconstructedFrame[frame_num]
         print(len(self.MV))
@@ -2286,6 +2292,138 @@ class VideoEncoder:
         cv2.imwrite('VBS.jpg', image)
         # cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+    def encoderMP(self, blockSize=16, searchRange=4, QP=6, FMEEnable=1, VBSEnable=1, FastME=1, nReferenceframe=1,
+                  paraMode=1):
+        self.QP = QP
+        blackframe = np.full((self.heightV, self.widthV), 128, np.uint8)
+        self.VBSEnable = VBSEnable
+        self.reconstructedFrame = [[] for _ in range(self.frameNum)]
+        self.MV = []
+        self.QTCC = []
+        self.MODE = []
+        self.VaribleBlockIndicators = []
+        self.blockSpliting(blockSize)
+        # initialize the FMEEnable parameter and the scaled frames
+        self.FMEEnable = FMEEnable
+        self.scaled_frames = []
+        self.bitsize = []
+        bitsize = 0
+        for i in range(10):  # !!!!!!!!!!!!!!!!!!!!!
+            # for i in range(1):
+            if paraMode == 1:
+                f = self.blockedYF[i]
+                motion_V, QTC_F, reconstructed_frame = searchT1(i, searchRange, f, blockSize, QP)
+                self.MV.append(motion_V)
+                self.QTCC.append(QTC_F)
+                self.reconstructedFrame[i] = reconstructed_frame
+                bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
+                for y in QTC_F:
+                    for x in y:
+                        bitsize += len(x) * 8
+                print("bitsize", bitsize)
+                self.bitsize.append(bitsize)
+            if paraMode == 2:
+                f = self.blockedYF[i]
+                if self.iPer[i] == 0:
+                    # inter para
+                    if i == 0:
+                        #                               Full_searchpara(currFnum, iRange, currF, refF, blockSize, QP=6, heightV=288, widthV=352):
+                        motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f,blackframe, blockSize, QP)
+                    else:
+                        motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f,self.reconstructedFrame[i-1], blockSize, QP)
+                    self.MV.append(motion_V)
+                    self.QTCC.append(QTC_F)
+                    self.reconstructedFrame[i] = constractFrame( reconstructed_frame)
+                    bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
+                    a = count_elements_in_nested_array(QTC_F)
+                    bitsize += a * 8
+                    print("bitsize", bitsize)
+                    self.bitsize.append(bitsize)
+
+                if self.iPer[i] == 1:
+                    # intra para
+                    mode, QTC_F, re_frame, VaribleBlockFlag = intra_Pred_T2(f, i, blockSize, QP)
+                    self.MODE.append(mode)
+                    self.QTCC.append(QTC_F)
+                    self.reconstructedFrame[i] = constractFrame(re_frame)
+                    a = count_elements_in_nested_array(QTC_F)
+
+                    bitsize += a * 8
+                    m = count_elements_in_nested_array(mode)
+                    bitsize += m * 1
+                    print("bitsize", bitsize)
+                    self.bitsize.append(bitsize)
+            if paraMode == 3:
+                break
+        if paraMode == 3:
+
+            for i in range(1):
+                # intra para
+                f = self.blockedYF[0]
+                mode, QTC_F, re_frame, VaribleBlockFlag = intra_Pred_T2(f, i, blockSize, QP)
+                self.MODE.append(mode)
+                self.QTCC.append(QTC_F)
+                self.reconstructedFrame[i] = constractFrame(re_frame)
+                a = count_elements_in_nested_array(QTC_F)
+
+                bitsize += a * 8
+                m = count_elements_in_nested_array(mode)
+                bitsize += m * 1
+                print("bitsize", bitsize)
+                for i in range(1, 10, 2):
+                    ref_f = np.array( self.reconstructedFrame[i - 1])
+                    print(ref_f.shape)
+                    f= self.blockedYF[i]
+                    f1 = self.blockedYF[i + 1]
+
+                    #def T3main(currFnum, iRange, currF1, currF2, refF, blockSize, QP=6, heightV=288, widthV=352):
+                    r1,r2 = T3main((i,i+1), 4, f, f1, ref_f, blockSize, 6, 288, 352)
+
+                    # return motion_V, QTC_F, reconstructed_frame
+                    self.MV.append(r1[0])
+                    self.MV.append(r2[0])
+                    self.QTCC.append(r1[1])
+                    self.QTCC.append(r2[1])
+
+                    self.reconstructedFrame[i] = self.constractFrame((r1[2]))
+                    self.reconstructedFrame[i+1] = self.constractFrame((r2[2]))
+                    bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth *2
+                    a = count_elements_in_nested_array(r1[1])
+                    a1 = count_elements_in_nested_array(r2[1])
+                    bitsize += (a+a1) * 8
+                    print("bitsize", bitsize)
+
+        # Decode MVs
+        if VBSEnable == 0:
+            diff_inter_lis = []
+            for i in self.MV:
+                # print(i)
+                diff_inter = Diff_Enco_inter(i)
+                # print(diff_inter)
+                diff_inter_lis.append(diff_inter)
+            diff_intra_lis = []
+            for i in self.MODE:
+                diff_intra = Diff_Intra_Encoder(i)
+                diff_intra_lis.append(diff_intra)
+        else:
+            indI = 0
+            indP = 0
+            diff_inter_lis = []
+            diff_intra_lis = []
+            for i in range(len(self.VaribleBlockIndicators)):
+                if self.iPer[i] == 0:
+                    res = self.diff_encode_inter_perVBS(self.MV[indP], self.VaribleBlockIndicators[i])
+                    diff_inter_lis.append(res)
+                    indP += 1
+                if self.iPer[i] == 1:
+                    res = self.diff_encode_intra_perVBS(self.MODE[indI], self.VaribleBlockIndicators[i])
+                    diff_intra_lis.append(res)
+                    indI += 1
+
+        QTCCoeeff = [self.QTCC]
+        MDiff = [self.iPer, diff_inter_lis, diff_intra_lis, self.VaribleBlockIndicators]  # self.VaribleBlockIndicators
+        return [QTCCoeeff, MDiff]
 
     def visualizeMTF(self, frame_num):
         image = self.reconstructedFrame[frame_num]
