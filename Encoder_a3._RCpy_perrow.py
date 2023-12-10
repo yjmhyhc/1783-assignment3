@@ -248,7 +248,8 @@ class VideoEncoder:
                                 # print("refxy: ", ref_x, ref_y)
 
                                 if (
-                                        0 <= ref_x + self.blockSize <= (self.widthV * self.FMEEnable - (self.FMEEnable - 1))
+                                        0 <= ref_x + self.blockSize <= (
+                                        self.widthV * self.FMEEnable - (self.FMEEnable - 1))
                                         and 0 <= ref_y + self.blockSize <= (
                                                 self.heightV * self.FMEEnable - (self.FMEEnable - 1))
                                 ) and (
@@ -285,7 +286,8 @@ class VideoEncoder:
         motionV = motion_V
         # print(motionV)
         return [motionV, QTC_F]
-    def Full_search_RC(self, currFnum, iRange, table,bit_frame,QP=6, nRefFrames=1):
+
+    def Full_search_RC(self, currFnum, iRange, table, bit_frame, QP=6, nRefFrames=1):
         """
         _summary_
 
@@ -372,7 +374,8 @@ class VideoEncoder:
                                 # print("refxy: ", ref_x, ref_y)
 
                                 if (
-                                        0 <= ref_x + self.blockSize <= (self.widthV * self.FMEEnable - (self.FMEEnable - 1))
+                                        0 <= ref_x + self.blockSize <= (
+                                        self.widthV * self.FMEEnable - (self.FMEEnable - 1))
                                         and 0 <= ref_y + self.blockSize <= (
                                                 self.heightV * self.FMEEnable - (self.FMEEnable - 1))
                                 ) and (
@@ -404,41 +407,41 @@ class VideoEncoder:
                 motion_V[i].append(tempMV)
                 QTC_F[i].append(resE)
                 reconstructed_frame[i].append(recons_block)
-            #     # exercise 1
-            #     bit_spend = tempMV[0].bit_length()+ tempMV[1].bit_length()+ tempMV[2].bit_length() +len(resE)*8
-            #     # change QP
-            #     bit_frame -= bit_spend
-            # if self.blockNumInHeight-i-1 > 0:
-            #     # print(bit_frame)
-            #     bit_row = bit_frame // (self.blockNumInHeight - i - 1)
-            #     min_difference = 100000000
-            #     for key, value in table.items():
-            #         difference = value - bit_row
-            #         if 0 < difference < min_difference:
-            #             min_difference = difference
-            #             qp = key
-            #     # print(qp)
-            #     QP = qp
+                #     # exercise 1
+                #     bit_spend = tempMV[0].bit_length()+ tempMV[1].bit_length()+ tempMV[2].bit_length() +len(resE)*8
+                #     # change QP
+                #     bit_frame -= bit_spend
+                # if self.blockNumInHeight-i-1 > 0:
+                #     # print(bit_frame)
+                #     bit_row = bit_frame // (self.blockNumInHeight - i - 1)
+                #     min_difference = 100000000
+                #     for key, value in table.items():
+                #         difference = value - bit_row
+                #         if 0 < difference < min_difference:
+                #             min_difference = difference
+                #             qp = key
+                #     # print(qp)
+                #     QP = qp
                 # exercise 2
-                bit_spend = tempMV[0].bit_length()+ tempMV[1].bit_length()+ tempMV[2].bit_length() +len(resE)*8
+                bit_spend = tempMV[0].bit_length() + tempMV[1].bit_length() + tempMV[2].bit_length() + len(resE) * 8
                 bitcount_row += bit_spend
             bitcount_row_array.append(bitcount_row)
         bitcount_row_array = np.array(bitcount_row_array)
         bitcount_frame = np.sum(bitcount_row_array)
         # calculate the scaling factor
         bitcount_frame_statistics = table[QP] * self.blockNumInHeight
-        scaling_factor = bitcount_frame/bitcount_frame_statistics
+        scaling_factor = bitcount_frame / bitcount_frame_statistics
         self.bitcount_scaling_factor[currFnum] = scaling_factor
         # calculate the bitcount proportion for every row
-        bitcount_proportion_row = bitcount_row_array/bitcount_frame
+        bitcount_proportion_row = bitcount_row_array / bitcount_frame
         self.row_bitcount_proportion[currFnum] = bitcount_proportion_row
-
 
         self.reconstructedFrame[currFnum] = self.constractFrame(reconstructed_frame)
         motionV = motion_V
         # print(motionV)
         return [motionV, QTC_F]
-    def Full_search_RC_2(self, currFnum, iRange, table,bit_frame,QP=6, nRefFrames=1):
+
+    def Full_search_RC_2(self, currFnum, iRange, table, bit_frame, QP=6, nRefFrames=1):
         """
         _summary_
         this function is the search function in the second pass of the encoding process
@@ -468,7 +471,7 @@ class VideoEncoder:
 
         # exercise 2 part c: refine the fixed table
         table = {0: 35839, 1: 28684, 2: 21232, 3: 14395, 4: 8542, 5: 4228, 6: 1589, 7: 687, 8: 466, 9: 416, 10: 410,
-                     11: 409}
+                 11: 409}
         scaling_factor = self.bitcount_scaling_factor[currFnum]
         for key in table:
             table[key] *= scaling_factor
@@ -545,7 +548,8 @@ class VideoEncoder:
                                 # print("refxy: ", ref_x, ref_y)
 
                                 if (
-                                        0 <= ref_x + self.blockSize <= (self.widthV * self.FMEEnable - (self.FMEEnable - 1))
+                                        0 <= ref_x + self.blockSize <= (
+                                        self.widthV * self.FMEEnable - (self.FMEEnable - 1))
                                         and 0 <= ref_y + self.blockSize <= (
                                                 self.heightV * self.FMEEnable - (self.FMEEnable - 1))
                                 ) and (
@@ -587,7 +591,8 @@ class VideoEncoder:
         motionV = motion_V
         # print(motionV)
         return [motionV, QTC_F]
-    def Full_search_RC_3(self, currFnum, iRange, table,bit_frame,QP=6, nRefFrames=1):
+
+    def Full_search_RC_3(self, currFnum, iRange, table, bit_frame, QP=6, nRefFrames=1):
         """
         _summary_
         this function is the search function in the second pass of the encoding process
@@ -617,7 +622,7 @@ class VideoEncoder:
 
         # exercise 2 part c: refine the fixed table
         table = {0: 35839, 1: 28684, 2: 21232, 3: 14395, 4: 8542, 5: 4228, 6: 1589, 7: 687, 8: 466, 9: 416, 10: 410,
-                     11: 409}
+                 11: 409}
         scaling_factor = self.bitcount_scaling_factor[currFnum]
         for key in table:
             table[key] *= scaling_factor
@@ -708,7 +713,8 @@ class VideoEncoder:
                                 # print("refxy: ", ref_x, ref_y)
 
                                 if (
-                                        0 <= ref_x + self.blockSize <= (self.widthV * self.FMEEnable - (self.FMEEnable - 1))
+                                        0 <= ref_x + self.blockSize <= (
+                                        self.widthV * self.FMEEnable - (self.FMEEnable - 1))
                                         and 0 <= ref_y + self.blockSize <= (
                                                 self.heightV * self.FMEEnable - (self.FMEEnable - 1))
                                 ) and (
@@ -1350,7 +1356,7 @@ class VideoEncoder:
         diff = cv2.absdiff(decoded_frame, reconstructed_frame)
         # Check if the frames fully match by checking if the difference is zero
         return np.sum(diff) == 0
-    
+
     def encoder(self, blockSize=4, searchRange=16, QP=6, FMEEnable=1, VBSEnable=1, FastME=1, nReferenceframe=1):
         '''
 
@@ -1432,7 +1438,6 @@ class VideoEncoder:
                     diff_intra_lis.append(res)
                     indI += 1
 
-
         QTCCoeeff = [self.QTCC]
         MDiff = [self.iPer, diff_inter_lis, diff_intra_lis, self.VaribleBlockIndicators]  # self.VaribleBlockIndicators
         MDiff = [self.iPer, self.MV, self.MODE, self.VaribleBlockIndicators]
@@ -1445,8 +1450,9 @@ class VideoEncoder:
         #     pkl.dump(packed_data2, file2)
         '''
         return [QTCCoeeff, MDiff]
-    def bit_count_row(self,block_size,QP):
-        res = self.encoder(16, block_size , QP, 1, 0, 0, 1)
+
+    def bit_count_row(self, block_size, QP):
+        res = self.encoder(16, block_size, QP, 1, 0, 0, 1)
         iNum = 0
         pNum = 0
         row_bit = []
@@ -1465,16 +1471,16 @@ class VideoEncoder:
             MDiff = [MDiff1, MDiff2, MDiff3]
             output = [QTCC, MDiff]
             EncoderOut2(output)
-    
-            if os.path.exists('QTCC.npy') and os.path.exists('MDiff.npy') :
-                frame_bytescount = os.path.getsize('QTCC.npy') #+ os.path.getsize('MDiff.npy')
+
+            if os.path.exists('QTCC.npy') and os.path.exists('MDiff.npy'):
+                frame_bytescount = os.path.getsize('QTCC.npy')  # + os.path.getsize('MDiff.npy')
             frame_bitscount = frame_bytescount * 8
-            row_bitcount = frame_bitscount/math.ceil(self.heightV / block_size)
-            #row_bitcount = frame_bitscount/18
+            row_bitcount = frame_bitscount / math.ceil(self.heightV / block_size)
+            # row_bitcount = frame_bitscount/18
             row_bit.append(row_bitcount)
         filtered_list = [value for index, value in enumerate(row_bit) if index % 21 != 0]
         return round(sum(filtered_list) / len(filtered_list))
-        
+
         '''if id_frame % 8 != 0:
             print('p frame')
             QTCC = res[0][0][id_frame]
@@ -1499,14 +1505,16 @@ class VideoEncoder:
         row_bit.append(row_bitcount)
     filtered_list = [value for index, value in enumerate(row_bit) if index % 8 != 0]
     print(round(sum(filtered_list) / len(filtered_list)))'''
-    def bit_table(self,block_size,QP):
+
+    def bit_table(self, block_size, QP):
         table = {}
         for i in QP:
-            bit = self.bit_count_row(block_size,i)
+            bit = self.bit_count_row(block_size, i)
             table[i] = bit
         return table
 
-    def RC_encoder(self,RCflag,targetBR,fps = 30,blockSize=4, searchRange=4, QP=6,  QPs = [0,1,2,3,4,5,6,7,8,9],FMEEnable=1, VBSEnable=1, FastME=1, nReferenceframe=1):
+    def RC_encoder(self, RCflag, targetBR, fps=30, blockSize=4, searchRange=4, QP=6, QPs=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                   FMEEnable=1, VBSEnable=1, FastME=1, nReferenceframe=1):
         if RCflag == 0:
             return self.encoder(blockSize, searchRange, QP, FMEEnable, VBSEnable, FastME, nReferenceframe)
         else:
@@ -1555,7 +1563,7 @@ class VideoEncoder:
                 if i == 0:
                     the_refined_qp_values.append(qp)
                 else:
-                    the_refined_qp_values.append(numbers[i-1])
+                    the_refined_qp_values.append(numbers[i - 1])
 
             for i in range(21):  # !!!!!!!!!!!!!!!!!!!!!
                 if RCflag != 1:
@@ -1734,7 +1742,6 @@ class VideoEncoder:
 
                 res = [QTCCoeeff, MDiff]
                 return res
-
 
     def newBlocksearchP(self, ix, iy, block_size, iRange, nRefFrames, currFnum, QP):
         '''
@@ -2247,8 +2254,6 @@ class VideoEncoder:
         # cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-
-
     def visualizeMV(self, frame_num):
         image = self.reconstructedFrame[frame_num]
         print(len(self.MV))
@@ -2328,13 +2333,15 @@ class VideoEncoder:
                 if self.iPer[i] == 0:
                     # inter para
                     if i == 0:
-                        #                               Full_searchpara(currFnum, iRange, currF, refF, blockSize, QP=6, heightV=288, widthV=352):
-                        motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f,blackframe, blockSize, QP)
+                        motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f, blackframe,
+                                                                                 blockSize, QP)
                     else:
-                        motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f,self.reconstructedFrame[i-1], blockSize, QP)
+                        motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f,
+                                                                                 self.reconstructedFrame[i - 1],
+                                                                                 blockSize, QP)
                     self.MV.append(motion_V)
                     self.QTCC.append(QTC_F)
-                    self.reconstructedFrame[i] = constractFrame( reconstructed_frame)
+                    self.reconstructedFrame[i] = self.constractFrame(reconstructed_frame)
                     bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
                     a = count_elements_in_nested_array(QTC_F)
                     bitsize += a * 8
@@ -2346,7 +2353,7 @@ class VideoEncoder:
                     mode, QTC_F, re_frame, VaribleBlockFlag = intra_Pred_T2(f, i, blockSize, QP)
                     self.MODE.append(mode)
                     self.QTCC.append(QTC_F)
-                    self.reconstructedFrame[i] = constractFrame(re_frame)
+                    self.reconstructedFrame[i] = self.constractFrame(re_frame)
                     a = count_elements_in_nested_array(QTC_F)
 
                     bitsize += a * 8
@@ -2364,7 +2371,7 @@ class VideoEncoder:
                 mode, QTC_F, re_frame, VaribleBlockFlag = intra_Pred_T2(f, i, blockSize, QP)
                 self.MODE.append(mode)
                 self.QTCC.append(QTC_F)
-                self.reconstructedFrame[i] = constractFrame(re_frame)
+                self.reconstructedFrame[i] = self.constractFrame(re_frame)
                 a = count_elements_in_nested_array(QTC_F)
 
                 bitsize += a * 8
@@ -2372,13 +2379,13 @@ class VideoEncoder:
                 bitsize += m * 1
                 print("bitsize", bitsize)
                 for i in range(1, 10, 2):
-                    ref_f = np.array( self.reconstructedFrame[i - 1])
+                    ref_f = np.array(self.reconstructedFrame[i - 1])
                     print(ref_f.shape)
-                    f= self.blockedYF[i]
+                    f = self.blockedYF[i]
                     f1 = self.blockedYF[i + 1]
 
-                    #def T3main(currFnum, iRange, currF1, currF2, refF, blockSize, QP=6, heightV=288, widthV=352):
-                    r1,r2 = T3main((i,i+1), 4, f, f1, ref_f, blockSize, 6, 288, 352)
+                    # def T3main(currFnum, iRange, currF1, currF2, refF, blockSize, QP=6, heightV=288, widthV=352):
+                    r1, r2 = T3main((i, i + 1), 4, f, f1, ref_f, blockSize, 6, 288, 352)
 
                     # return motion_V, QTC_F, reconstructed_frame
                     self.MV.append(r1[0])
@@ -2387,11 +2394,11 @@ class VideoEncoder:
                     self.QTCC.append(r2[1])
 
                     self.reconstructedFrame[i] = self.constractFrame((r1[2]))
-                    self.reconstructedFrame[i+1] = self.constractFrame((r2[2]))
-                    bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth *2
+                    self.reconstructedFrame[i + 1] = self.constractFrame((r2[2]))
+                    bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth * 2
                     a = count_elements_in_nested_array(r1[1])
                     a1 = count_elements_in_nested_array(r2[1])
-                    bitsize += (a+a1) * 8
+                    bitsize += (a + a1) * 8
                     print("bitsize", bitsize)
 
         # Decode MVs
@@ -2671,9 +2678,6 @@ def reorder_decoder(coefficients):
     return reordered_matrix
 
 
-
-
-
 '''
 Exe4 d
 '''
@@ -2747,7 +2751,7 @@ def EncoderOutVBSOff(res):
     np.save('MDiff', a_r)
 
 
-def EncoderOut(res,ip):
+def EncoderOut(res, ip):
     '''
     save the decoded QTCC and MDIFF into files
     :param res:
@@ -2756,11 +2760,11 @@ def EncoderOut(res,ip):
     QTCC = res[0][0]
     flag = res[1][3]
     res1 = []
-    frn=0
+    frn = 0
     for fr in QTCC:
-        yi=0
+        yi = 0
         for y in fr:
-            xi=0
+            xi = 0
             for x in y:
                 # print(flag[frn][yi][xi])
                 if flag[frn][yi][xi] == 0:
@@ -2770,11 +2774,11 @@ def EncoderOut(res,ip):
                     for y2 in range(len(x)):
                         for x2 in range(len(x[0])):
                             res1 = np.concatenate((res1, x[y2][x2]))
-                xi+=1
-            yi+=1
-        frn +=1
-                # res1 = res1 + x
-                # res1 = np.concatenate((res1, x))
+                xi += 1
+            yi += 1
+        frn += 1
+        # res1 = res1 + x
+        # res1 = np.concatenate((res1, x))
 
     # print(len(res1))
     arr = np.array(res1)
@@ -2796,21 +2800,21 @@ def EncoderOut(res,ip):
         if indP == 0:
             frn = 1
         else:
-            frn = indP + math.ceil(frn/ip)
+            frn = indP + math.ceil(frn / ip)
         for iy in range(len(fr)):
             for ix in range(len(fr[0])):
                 # print("F:",flag[frn][iy][ix])
                 # print("V:", fr[iy][ix])
 
                 if len(fr[iy][ix]) == 3:
-                    count +=1
+                    count += 1
                     res1 = np.concatenate((res1, fr[iy][ix]))
                 else:
                     for y2 in range(2):
                         for x2 in range(2):
                             count += 1
                             res1 = np.concatenate((res1, fr[iy][ix][y2][x2]))
-        indP +=1
+        indP += 1
     print(len(res1))
     a_r = res1.astype(dtype=np.int8)
     np.save('inter', a_r)
@@ -2825,7 +2829,7 @@ def EncoderOut(res,ip):
             frn = indI * ip
         for iy in range(len(fr)):
             for ix in range(len(fr[0])):
-                print("F:",flag[frn][iy][ix])
+                print("F:", flag[frn][iy][ix])
                 print("V:", fr[iy][ix])
 
                 if fr[iy][ix] == 1 or fr[iy][ix] == 0:
@@ -2860,12 +2864,11 @@ def EncoderOut2(res):
     np.save('QTCC', a_r)
 
     MDiff = res[1]
-    res2 =[]
+    res2 = []
     for i in MDiff:
         lis = np.array([i])
         lis = lis.flatten()
         lisPA = lis.tolist()
-
 
         res2 = lisPA + res2
 
@@ -2874,16 +2877,37 @@ def EncoderOut2(res):
     np.save('MDiff', a_r)
 
 
+def RDFrame(F1, F2, bitsize):
+    res = []
+    lam = (0.04) * 2 ** ((QP - 12) / 3)
+
+    D = mse(F1, F2)
+    print("MSE: ", D)
+    J = D + lam * bitsize
+    res.append(J)
+    return res
+
+
+def count_elements_in_nested_array(arr):
+    count = 0
+    for item in arr:
+        if isinstance(item, list):
+            count += count_elements_in_nested_array(item)
+        else:
+            count += 1
+    return count
+
+
 if __name__ == "__main__":
     '''
     The main function will encode and decode the first 10 frame video 
     '''
     newO = VideoEncoder('foremanakiyo.yuv', 2, 'IPPPPPPPPPPPPPPPPPPPP')
-    QPs = [0,1,2,3,4,5,6,7,8,9,10,11]
+    QPs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     QP = 9
 
     # start_time = time.time()
-    #res = newO.encoder(16, 16, QP, 1, 0, 0, 1)
+    # res = newO.encoder(16, 16, QP, 1, 0, 0, 1)
     # end_time = time.time()
     # execution_time = end_time - start_time
     # print(f"execution time: {execution_time} s")
@@ -2894,16 +2918,17 @@ if __name__ == "__main__":
     endtime = time.time()
     duration = endtime - starttime
     print(duration)
-    #print( newO.bit_table(16,QPs))
-    #print( newO.bit_table(16,QPs))
-    #res = newO.RC_encoder(RCflag=1,targetBR = 1094861,fps = 30,blockSize=16, searchRange=16, QP=QP, QPs= QPs,FMEEnable=1, VBSEnable=0, FastME=0, nReferenceframe=1)
+    # print( newO.bit_table(16,QPs))
+    # print( newO.bit_table(16,QPs))
+    # res = newO.RC_encoder(RCflag=1,targetBR = 1094861,fps = 30,blockSize=16, searchRange=16, QP=QP, QPs= QPs,FMEEnable=1, VBSEnable=0, FastME=0, nReferenceframe=1)
 
     # print(newO.row_bitcount_proportion)
 
-    #print(newO.bit_count_row(16,11))
-    #newO.decoder(res[0], res[1])
+    # print(newO.bit_count_row(16,11))
+    # newO.decoder(res[0], res[1])
     bit_table = {0: 8139, 1: 6638, 2: 5101, 3: 3635, 4: 2218, 5: 1143, 6: 525, 7: 287, 8: 223, 9: 207}
-    bit_table_16 = {0: 39930, 1: 32548, 2: 24981, 3: 17838, 4: 10870, 5: 5557, 6: 2516, 7: 1353, 8: 1063, 9: 1004, 10: 995, 11: 994}
+    bit_table_16 = {0: 39930, 1: 32548, 2: 24981, 3: 17838, 4: 10870, 5: 5557, 6: 2516, 7: 1353, 8: 1063, 9: 1004,
+                    10: 995, 11: 994}
     '''
         calculate the size when VBS is on
     '''

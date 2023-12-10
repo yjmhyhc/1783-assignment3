@@ -1,7 +1,7 @@
 from joblib import Parallel, delayed, memory
 import numpy as np
 from collections import defaultdict
-from Assn2 import dct_2d, idct_2d, entropy_encoder, mse, MAE,quantization, racelling
+from Encoder_a3._RCpy_perrow import dct_2d, idct_2d, entropy_encoder, mse, MAE,quantization, racelling
 
 
 def quantizationN(TC, Q):
