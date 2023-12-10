@@ -104,6 +104,20 @@ def process_block(i, j, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP):
     return tempMV, quantB, recons_block
 
 
+def process_col(i, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP):
+    blockNumInWidth = len(curr_f[0])
+    blockNumInHeight = len(curr_f)
+    mvR = []
+    qtcR = []
+    reconsR = []
+    for x in range(blockNumInWidth):
+        mvT, qtcT, reconsT = process_block(i, x, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP)
+        mvR.append(mvT)
+        qtcR.append(qtcT)
+        reconsR.append(reconsT)
+    return mvR, qtcR, reconsR
+
+
 def Full_searchparaT2(currFnum, iRange, currF, refF, blockSize, QP=6, heightV=288, widthV=352):
     blockNumInWidth = len(currF[0])
     blockNumInHeight = len(currF)
@@ -117,25 +131,22 @@ def Full_searchparaT2(currFnum, iRange, currF, refF, blockSize, QP=6, heightV=28
 
     curr_f = currF
     ref_frames = refF
-
+    process_block_calls = []
     for i in range(blockNumInHeight):
-        motion_V.append([])
-        QTC_F.append([])
-        reconstructed_frame.append([])
+        # motion_V.append([])
+        # QTC_F.append([])
+        # reconstructed_frame.append([])
 
-        process_block_calls = []
-        for j in range(blockNumInWidth):
-            # def process_block(i, j, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP):
-            call = delayed(process_block)(i, j, iRange, blockSize, widthV, heightV, curr_f, ref_frames, QP)
-            process_block_calls.append(call)
+        call = delayed(process_col)(i, iRange, blockSize, widthV, heightV, curr_f, ref_frames, QP)
+        process_block_calls.append(call)
 
-        parallel = Parallel(n_jobs=1, prefer="threads")
-        results = parallel(process_block_calls)
+    parallel = Parallel(n_jobs=2, prefer="threads")
+    results = parallel(process_block_calls)
 
-        for result in results:
-            tempMV, quantB, recons_block = result
-            motion_V[i].append(tempMV)
-            QTC_F[i].append(quantB)
-            reconstructed_frame[i].append(recons_block)
+    for result in results:
+        tempMV, quantB, recons_block = result
+        motion_V.append(tempMV)
+        QTC_F.append(quantB)
+        reconstructed_frame.append(recons_block)
 
     return motion_V, QTC_F, reconstructed_frame
