@@ -2330,11 +2330,9 @@ class VideoEncoder:
 
                 bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
                 a = count_elements_in_nested_array(QTC_F)
-                print("size QTCF", a)
                 bitsize += a * 8
                 bitsizeF += a * 8
                 bitsizeF += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
-                print("bitsize", bitsize)
                 self.bitsize.append(bitsize)
                 rd = RDFrame(self.yFrame[i], self.reconstructedFrame[i], bitsizeF)
                 print("RD:", rd)
@@ -2378,7 +2376,6 @@ class VideoEncoder:
                     bitsize += a * 8
                     m = count_elements_in_nested_array(mode)
                     bitsize += m * 2
-                    print("bitsize", bitsize)
                     rd = RDFrame(self.yFrame[i], self.reconstructedFrame[i], bitsize)
                     print("RD:", rd)
                     self.RD.append(rd)
@@ -2400,7 +2397,7 @@ class VideoEncoder:
                 bitsize += a * 8
                 m = count_elements_in_nested_array(mode)
                 bitsize += m * 1
-                print("bitsize", bitsize)
+
                 for i in range(1, 10, 2):
                     ref_f = np.array(self.reconstructedFrame[i - 1])
                     print(ref_f.shape)
@@ -2422,7 +2419,6 @@ class VideoEncoder:
                     a = count_elements_in_nested_array(r1[1])
                     a1 = count_elements_in_nested_array(r2[1])
                     bitsize += (a + a1) * 8
-                    print("bitsize", bitsize)
 
         # Decode MVs
         if VBSEnable == 0:
@@ -2918,6 +2914,7 @@ def RDFrame(F1, F2, bitsize):
     res.append(J)
     return res
 
+
 def constractFrame(blocked):
     ind = 0
     res = np.array([])
@@ -3101,3 +3098,16 @@ if __name__ == "__main__":
     # # # print(r[0])
     # # newO.visualizeVBS(0)
     # # # newO.diff_encode_intra_perVBS(r[0], newO.VaribleBlockIndicators[0])
+
+    '''
+    This is for parallelism of the encoder
+    '''
+    # newO = VideoEncoder('CIF.yuv', 2, 'IPPPPPPPPP')
+    # QP = 1
+    # s = time.time()
+    # newO.encoderMP(blockSize=16, searchRange=4, QP=6, FMEEnable=1, VBSEnable=1, FastME=1, nReferenceframe=1, paraMode=2)
+    # e = time.time()
+    # print("Execution time: ", e - s, "seconds")
+    # bitsize = 0
+    # print("mean RD",np.mean(newO.RD))
+    # print("mean D", np.mean(newO.D))
