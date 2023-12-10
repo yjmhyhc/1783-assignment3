@@ -1,7 +1,17 @@
 from joblib import Parallel, delayed, memory
 import numpy as np
 from collections import defaultdict
-from Encoder_a3._RCpy_perrow import dct_2d, idct_2d, entropy_encoder, mse, MAE,quantization, racelling
+from Assn3 import dct_2d, idct_2d, entropy_encoder, mse,quantization, racelling
+
+def MAE(block_A=np.array([[]]), block_B=np.array([[]])):
+    """
+    Args:
+        block_A (2D
+        block_B (2D
+    """
+    absD = np.abs(block_A - block_B)
+    mae = absD.mean()
+    return mae
 
 
 def quantizationN(TC, Q):

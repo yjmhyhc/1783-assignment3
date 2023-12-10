@@ -131,7 +131,7 @@ def process_block(i, j, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP):
     return tempMV, quantB, recons_block
 
 
-def process_col(i, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP):
+def process_row(i, iRange, blockSize, widthV, heightV, curr_f, ref_f, QP):
     blockNumInWidth = len(curr_f[0])
     blockNumInHeight = len(curr_f)
     mvR = []
@@ -169,7 +169,7 @@ def Full_search_First(currFnum, iRange, currF, refF, blockSize, start_events, en
     ref_frames = refF
 
     for j in range(blockNumInHeight):
-        tempMV, quantB, recons_block = process_col(j, iRange, blockSize, widthV, heightV, curr_f, ref_frames, QP)
+        tempMV, quantB, recons_block = process_row(j, iRange, blockSize, widthV, heightV, curr_f, ref_frames, QP)
 
         motion_V.append(tempMV)
         QTC_F.append(quantB)
@@ -210,7 +210,7 @@ def Full_search_Second(currFnum, iRange, currF, refF, blockSize, start_events, Q
         # print("2j", j, "len REF", len(encodedFrame))
 
         ref_frames = encodedFrame
-        tempMV, quantB, recons_block = process_col(j, iRange, blockSize, widthV, heightV, curr_f, ref_frames, QP)
+        tempMV, quantB, recons_block = process_row(j, iRange, blockSize, widthV, heightV, curr_f, ref_frames, QP)
         motion_V.append(tempMV)
         QTC_F.append(quantB)
         reconstructed_frame.append(recons_block)
