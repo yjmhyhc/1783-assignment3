@@ -2313,26 +2313,40 @@ class VideoEncoder:
         self.FMEEnable = FMEEnable
         self.scaled_frames = []
         self.bitsize = []
-        bitsize = 0
+        self.D = []
+        self.RD = []
+
         for i in range(10):  # !!!!!!!!!!!!!!!!!!!!!
             # for i in range(1):
+            bitsize = 0
             if paraMode == 1:
+                bitsize = 0
                 f = self.blockedYF[i]
+                bitsizeF = 0
                 motion_V, QTC_F, reconstructed_frame = searchT1(i, searchRange, f, blockSize, QP)
                 self.MV.append(motion_V)
                 self.QTCC.append(QTC_F)
                 self.reconstructedFrame[i] = reconstructed_frame
+
                 bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
-                for y in QTC_F:
-                    for x in y:
-                        bitsize += len(x) * 8
+                a = count_elements_in_nested_array(QTC_F)
+                print("size QTCF", a)
+                bitsize += a * 8
+                bitsizeF += a * 8
+                bitsizeF += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
                 print("bitsize", bitsize)
                 self.bitsize.append(bitsize)
+                rd = RDFrame(self.yFrame[i], self.reconstructedFrame[i], bitsizeF)
+                print("RD:", rd)
+                self.RD.append(rd)
+                self.D.append(mse(self.yFrame[i], self.reconstructedFrame[i]))
             if paraMode == 2:
                 f = self.blockedYF[i]
                 if self.iPer[i] == 0:
+                    bitsizeF = 0
                     # inter para
                     if i == 0:
+                        #                               Full_searchpara(currFnum, iRange, currF, refF, blockSize, QP=6, heightV=288, widthV=352):
                         motion_V, QTC_F, reconstructed_frame = Full_searchparaT2(i, searchRange, f, blackframe,
                                                                                  blockSize, QP)
                     else:
@@ -2341,11 +2355,16 @@ class VideoEncoder:
                                                                                  blockSize, QP)
                     self.MV.append(motion_V)
                     self.QTCC.append(QTC_F)
-                    self.reconstructedFrame[i] = self.constractFrame(reconstructed_frame)
+                    self.reconstructedFrame[i] = constractFrame(reconstructed_frame)
                     bitsize += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
                     a = count_elements_in_nested_array(QTC_F)
                     bitsize += a * 8
-                    print("bitsize", bitsize)
+                    bitsizeF += a * 8
+                    bitsizeF += 8 * 2 * self.blockNumInHeight * self.blockNumInWidth
+                    rd = RDFrame(self.yFrame[i], self.reconstructedFrame[i], bitsizeF)
+                    print("RD:", rd)
+                    self.RD.append(rd)
+                    self.D.append(mse(self.yFrame[i], self.reconstructedFrame[i]))
                     self.bitsize.append(bitsize)
 
                 if self.iPer[i] == 1:
@@ -2353,13 +2372,17 @@ class VideoEncoder:
                     mode, QTC_F, re_frame, VaribleBlockFlag = intra_Pred_T2(f, i, blockSize, QP)
                     self.MODE.append(mode)
                     self.QTCC.append(QTC_F)
-                    self.reconstructedFrame[i] = self.constractFrame(re_frame)
+                    self.reconstructedFrame[i] = constractFrame(re_frame)
                     a = count_elements_in_nested_array(QTC_F)
-
+                    bitsize = 0
                     bitsize += a * 8
                     m = count_elements_in_nested_array(mode)
-                    bitsize += m * 1
+                    bitsize += m * 2
                     print("bitsize", bitsize)
+                    rd = RDFrame(self.yFrame[i], self.reconstructedFrame[i], bitsize)
+                    print("RD:", rd)
+                    self.RD.append(rd)
+                    self.D.append(mse(self.yFrame[i], self.reconstructedFrame[i]))
                     self.bitsize.append(bitsize)
             if paraMode == 3:
                 break
@@ -2371,7 +2394,7 @@ class VideoEncoder:
                 mode, QTC_F, re_frame, VaribleBlockFlag = intra_Pred_T2(f, i, blockSize, QP)
                 self.MODE.append(mode)
                 self.QTCC.append(QTC_F)
-                self.reconstructedFrame[i] = self.constractFrame(re_frame)
+                self.reconstructedFrame[i] = constractFrame(re_frame)
                 a = count_elements_in_nested_array(QTC_F)
 
                 bitsize += a * 8
@@ -2430,6 +2453,14 @@ class VideoEncoder:
 
         QTCCoeeff = [self.QTCC]
         MDiff = [self.iPer, diff_inter_lis, diff_intra_lis, self.VaribleBlockIndicators]  # self.VaribleBlockIndicators
+        '''
+        # packed_data1 = pkl.dumps(QTCCoeeff)
+        # packed_data2 = pkl.dumps(MDiff) 
+        # with open('data1.pickle', 'wb') as file1:
+        #     pkl.dump(packed_data1, file1)
+        # with open('data.pickle', 'wb') as file2:
+        #     pkl.dump(packed_data2, file2)
+        '''
         return [QTCCoeeff, MDiff]
 
     def visualizeMTF(self, frame_num):
@@ -2885,6 +2916,27 @@ def RDFrame(F1, F2, bitsize):
     print("MSE: ", D)
     J = D + lam * bitsize
     res.append(J)
+    return res
+
+def constractFrame(blocked):
+    ind = 0
+    res = np.array([])
+    for y in blocked:
+        row = np.array([])
+        for x in y:
+            ind += 1
+            if len(row) == 0:
+                row = x
+            else:
+                row = np.hstack((row, x))
+        if len(res) == 0:
+            res = row
+        else:
+            res = np.vstack((res, row))
+    res = np.clip(res, 0, 255)
+    res = np.array(res, dtype=np.uint8)
+    # cv2.imshow('hello', res)
+    # cv2.waitKey(40)  # 按 'q' 键退出
     return res
 
 
